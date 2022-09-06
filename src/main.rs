@@ -13,13 +13,16 @@ fn run_opt_calc(inp_path: PathBuf, out_path: PathBuf, move_path: PathBuf) {
     let from_move_path = PathBuf::from(&inp_path);
 
     // Initialize data
-    thread::sleep(Duration::from_millis(1));  // Avoids OS sometimes still using file when moved into "input"
+    thread::sleep(Duration::from_millis(1)); // Avoids OS sometimes still using file when moved into "input"
 
     // Timing initialization
     let mut start = Instant::now();
     println!("Started processing options at: {}", Utc::now());
-    let data = parse_input(inp_path);
-    println!("Time to parse inputs: {} ms (OS bound)", start.elapsed().as_millis());
+    let data = parse_input::parse_input(inp_path);
+    println!(
+        "Time to parse inputs: {} ms (OS bound)",
+        start.elapsed().as_millis()
+    );
 
     // Timing computation
     start = Instant::now();
@@ -54,7 +57,10 @@ fn run_opt_calc(inp_path: PathBuf, out_path: PathBuf, move_path: PathBuf) {
     // Write and time output
     start = Instant::now();
     write_csv_out(out_path, opts).expect("Failed writing output to csv.");
-    println!("Time to write result: {} ms (OS bound)", start.elapsed().as_millis());
+    println!(
+        "Time to write result: {} ms (OS bound)",
+        start.elapsed().as_millis()
+    );
 
     // Move input file
     fs::rename(from_move_path, move_path).expect("Failed to rename file.");
