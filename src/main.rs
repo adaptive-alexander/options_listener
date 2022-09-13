@@ -71,7 +71,7 @@ fn run_opt_calc(inp_path: PathBuf, out_path: PathBuf, move_path: PathBuf) {
 async fn main() {
     listener(
         &run_opt_calc,
-        &10,
+        &100, // Sleep in ms
         r".\input",
         r".\output",
         r".\input\processed",
