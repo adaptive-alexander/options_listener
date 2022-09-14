@@ -1,14 +1,22 @@
 // #![windows_subsystem = "windows"]
 
 use chrono::offset::Utc;
-use chrono::DateTime;
-use options::*;
+use options::options_struct::Options;
+use options::pricing_models::black_scholes;
+use options::utilities;
 use processing_listener::listener;
 use rayon::prelude::*;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 use std::{fs, thread};
 
+/// # run_opt_calc
+/// Run function for listener
+///
+/// # args:
+/// *`inp_path` - Path for input file.
+/// *`out_path` - Path for output file.
+/// *`move_path` - Path to move processed input files into.
 fn run_opt_calc(inp_path: PathBuf, out_path: PathBuf, move_path: PathBuf) {
     let from_move_path = PathBuf::from(&inp_path);
 
@@ -18,45 +26,39 @@ fn run_opt_calc(inp_path: PathBuf, out_path: PathBuf, move_path: PathBuf) {
     // Timing initialization
     let mut start = Instant::now();
     println!("Started processing options at: {}", Utc::now());
-    let data = parse_input::parse_input(inp_path);
+    let mut opts = Options::from_file(&inp_path, Box::new(black_scholes::BlackScholesModel::new()));
     println!(
         "Time to parse inputs: {} ms (OS bound)",
         start.elapsed().as_millis()
     );
 
-    // Timing computation
+    // Timing computation and chunking
     start = Instant::now();
 
-    // Chunk data
-    let chunk_data: (
-        Vec<Vec<String>>,
-        Vec<Vec<OptTypes>>,
-        Vec<Vec<f64>>,
-        Vec<Vec<f64>>,
-        Vec<Vec<DateTime<Utc>>>,
-        Vec<Vec<DateTime<Utc>>>,
-        Vec<Vec<f64>>,
-        Vec<Vec<f64>>,
-        Vec<Vec<f64>>,
-    ) = (
-        data.0.into_par_iter().chunks(1000).collect(),
-        data.1.into_par_iter().chunks(1000).collect(),
-        data.2.into_par_iter().chunks(1000).collect(),
-        data.3.into_par_iter().chunks(1000).collect(),
-        data.4.into_par_iter().chunks(1000).collect(),
-        data.5.into_par_iter().chunks(1000).collect(),
-        data.6.into_par_iter().chunks(1000).collect(),
-        data.7.into_par_iter().chunks(1000).collect(),
-        data.8.into_par_iter().chunks(1000).collect(),
+    // Chunk options
+    let mut chunked_opts = utilities::chunk_opt(opts, 1000);
+
+    // Timing computation
+    let start_comp = Instant::now();
+    // Parallel computation of options_old
+    chunked_opts.par_iter_mut().for_each(|x| x.get_prices());
+    chunked_opts.par_iter_mut().for_each(|x| x.get_greeks());
+    println!(
+        "Time for computation: {} µs",
+        start_comp.elapsed().as_micros()
     );
 
-    // Parallel computation of options
-    let opts: Vec<Options> = chunk_data.into_par_iter().map(initialize_opts).collect();
-    println!("Time to compute: {} µs", start.elapsed().as_micros());
+    // Collect Options
+    opts = utilities::collect_chunks(chunked_opts);
+    println!(
+        "Time to compute including chunking and collecting: {} µs",
+        start.elapsed().as_micros()
+    );
 
     // Write and time output
     start = Instant::now();
-    write_csv_out(out_path, opts).expect("Failed writing output to csv.");
+    opts.write_csv(out_path)
+        .expect("Failed writing output to csv.");
     println!(
         "Time to write result: {} ms (OS bound)",
         start.elapsed().as_millis()
