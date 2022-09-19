@@ -1,4 +1,4 @@
-settle,ticker,maturity,opt_type,underlying,sigma,rfr,dividend,strike
+settle,ticker,maturity,opt_type,underlying,volatility,rfr,dividend,strike
 2022-06-01,AAPL-US,2022-06-20,call,148.71,0.349595885,0.034,0.03,110
 2022-06-02,AAPL-US,2022-06-20,call,151.21,0.349571887,0.034,0.03,110
 2022-06-03,AAPL-US,2022-06-20,call,145.38,0.347688165,0.034,0.03,110

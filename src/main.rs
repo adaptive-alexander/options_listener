@@ -4,7 +4,7 @@ use chrono::offset::Utc;
 use options::options_struct::Options;
 use options::pricing_models::black_scholes;
 use options::utilities;
-use processing_listener::listener;
+use processing_listener::dir_listener;
 use rayon::prelude::*;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
@@ -71,7 +71,8 @@ fn run_opt_calc(inp_path: PathBuf, out_path: PathBuf, move_path: PathBuf) {
 
 #[tokio::main]
 async fn main() {
-    listener(
+    // todo!("Feature: Add support to parse args for either dir or pubsub")
+    dir_listener::dir_listener(
         &run_opt_calc,
         &100, // Sleep in ms
         r".\input",
