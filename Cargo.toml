@@ -6,8 +6,8 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-options = { path = "../options" }
-processing-listener = { path = "../processing_listener"}
+options = { git = "https://github.com/adaptive-alexander/options.git" }
+processing-listener = { git = "https://github.com/adaptive-alexander/processing_listener.git"}
 tokio = { version = "1", features = ["full"] }
 rayon = "1.5.3"
 chrono = "0.4.19"
