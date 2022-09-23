@@ -3,7 +3,9 @@ name = "options-listener"
 version = "0.4.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[[bin]]
+name = "options_listener"
+path = "src/main.rs"
 
 [dependencies]
 options = { git = "https://github.com/adaptive-alexander/options.git" }
